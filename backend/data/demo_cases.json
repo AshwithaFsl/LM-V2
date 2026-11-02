@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "loan_id": "5550001001",
+      "borrower_name": "Amelia J. Carter",
+      "scenario": "Clean package",
+      "description": "Two paystubs and matching borrower identifiers; co-borrower included.",
+      "expected_outcome": "Intake Complete, then eligible to enter Retention Eligibility. Later stages depend on their checks and approvals.",
+      "profile": {
+        "coborrower_name": "Owen R. Carter", "borrower_ssn_last4": "3141", "document_ssn_last4": "3141", "coborrower_ssn_last4": "2718",
+        "address": "2210 Riverbend Lane, Austin, TX 78701", "state": "TX",
+        "hoa": {"hoa_exists": true, "monthly_amount": 180.0, "association_name": "Riverbend HOA"},
+        "tax_bill_date": "2026-09-01", "escrow": 410.0, "due_date": "2026-09-15", "upb": 268400.0, "months_delinquent": 2,
+        "insurance": {"carrier": "State Farm", "policy_number": "HO-55101-TX", "policy_current": true, "policy_expiry_date": "2027-08-01"},
+        "review_dates": {"l92_date": "2026-10-10", "review_start_date": "2026-10-10", "review_date_minus_10": "2026-09-30", "review_date_minus_90": "2026-07-12"},
+        "latest_note_date": "2026-10-09", "employer": "Lone Star Analytics", "employer_ein": "74-5510010",
+        "hardship": "Reduction in income", "hardship_start": "07/20/2026", "signature_date": "09/20/2026",
+        "monthly_income": 5600, "net_pay": 2104.5, "annual_salary": 67200.0,
+        "paystubs": [
+          {"pay_period_start": "08/16/2026", "pay_period_end": "08/31/2026", "pay_date": "09/01/2026", "gross_ytd": 44800, "ytd_periods_paid": 16},
+          {"pay_period_start": "09/16/2026", "pay_period_end": "09/30/2026", "pay_date": "10/01/2026", "gross_ytd": 50400, "ytd_periods_paid": 18}
+        ],
+        "bank": {
+          "institution_name": "Frost Bank", "account_last4": "4410", "statement_start_date": "07/15/2026", "statement_end_date": "10/05/2026",
+          "opening_balance": 3120.4, "closing_balance": 4388.9,
+          "all_deposits": [
+            {"date": "08/01/2026", "type": "credit", "balance": 5210.1, "description": "PAYROLL DIRECT DEP - Lone Star Analyti", "reference_number": "PPD-20260801-01"},
+            {"date": "09/01/2026", "type": "credit", "balance": 5034.7, "description": "PAYROLL DIRECT DEP - Lone Star Analyti", "reference_number": "PPD-20260901-01"},
+            {"date": "10/01/2026", "type": "credit", "balance": 5188.2, "description": "PAYROLL DIRECT DEP - Lone Star Analyti", "reference_number": "PPD-20261001-01"}
+          ], "recurring_deposits_over_250": []
+        },
+        "credit": {
+          "representative_credit_score": 668, "credit_score_equifax": 668, "credit_score_experian": 661, "credit_score_transunion": 672,
+          "mortgage_status": "60-Day Late x1", "monthly_mortgage_payment": 2310, "monthly_obligations": 2890, "total_monthly_payments": 2890,
+          "total_balance": 61200, "late_payments": "60-Day Late reported for August 2026", "open_accounts": 6, "total_accounts": 8, "recent_hard_inquiries": 1
+        }
+      },
+      "servicing": {
+        "loan_id": "5550001001", "scenario": "Trial complete; closing inputs clean",
+        "trial_payments": ["on_time", "on_time", "on_time"],
+        "servicing_data": {
+          "DLQ1": {"interest_rate": 4.75},
+          "TASK1": {"tasks": [
+            {"task_id": "ESCMOD", "status": "Completed", "description": "Escrow modification", "opened_date": "2026-09-01", "completed_date": "2026-09-18"},
+            {"task_id": "PLNMTR", "status": "Completed", "description": "Plan monitoring", "opened_date": "2026-09-01", "completed_date": "2026-09-25"}
+          ]},
+          "MES1": {"tasks": []},
+          "LSMR": {"current_interest_rate": 4.75, "new_interest_rate": 6.875, "new_term_months": 480, "new_principal_balance": 268400.0, "new_payment_amount": 1643.61},
+          "LMT3": {"x65_date": "2026-10-19", "e74_date": "2026-10-20", "j03_date": "2026-10-21", "x58_date": "2026-10-22", "e68_date": "2026-10-23"}
+        },
+        "neighbourhood_document": {"document_date": "09/15/2026", "borrower_name": "Amelia J. Carter", "property_address": "2210 Riverbend Lane, Austin, TX 78701", "upb": 268400.0, "prior_partial_claim_amounts": []}
+      }
+    },
+    {
+      "loan_id": "5550001002",
+      "borrower_name": "Noah P. Bennett",
+      "scenario": "SSN mismatch",
+      "description": "MSP SSN ends in 4421; the application and credit report end in 4412. Requires identity review.",
+      "expected_outcome": "Intake In Human Review with a Decision Inbox item. Approval allows processing to continue, subject to remaining checks.",
+      "profile": {
+        "coborrower_name": null, "borrower_ssn_last4": "4421", "document_ssn_last4": "4412", "coborrower_ssn_last4": null,
+        "address": "78 Harbor View Road, Portland, ME 04101", "state": "ME",
+        "hoa": {"hoa_exists": false, "monthly_amount": 0.0, "association_name": null},
+        "tax_bill_date": "2026-08-28", "escrow": 365.0, "due_date": "2026-09-01", "upb": 198750.0, "months_delinquent": 1,
+        "insurance": {"carrier": "Liberty Mutual", "policy_number": "HO-55102-ME", "policy_current": true, "policy_expiry_date": "2027-05-18"},
+        "review_dates": {"l92_date": "2026-10-08", "review_start_date": "2026-10-08", "review_date_minus_10": "2026-09-28", "review_date_minus_90": "2026-07-10"},
+        "latest_note_date": "2026-10-07", "employer": "Casco Bay Marine", "employer_ein": "01-5510020",
+        "hardship": "Medical expense", "hardship_start": "07/28/2026", "signature_date": "09/18/2026",
+        "monthly_income": 4600, "net_pay": 1745.2, "annual_salary": 55200.0,
+        "paystubs": [
+          {"pay_period_start": "08/16/2026", "pay_period_end": "08/31/2026", "pay_date": "09/01/2026", "gross_ytd": 36800, "ytd_periods_paid": 16},
+          {"pay_period_start": "09/16/2026", "pay_period_end": "09/30/2026", "pay_date": "10/01/2026", "gross_ytd": 41400, "ytd_periods_paid": 18}
+        ],
+        "bank": {
+          "institution_name": "Bangor Savings Bank", "account_last4": "7781", "statement_start_date": "07/15/2026", "statement_end_date": "10/03/2026",
+          "opening_balance": 2210.0, "closing_balance": 2984.3,
+          "all_deposits": [
+            {"date": "08/01/2026", "type": "credit", "balance": 4012.6, "description": "PAYROLL DIRECT DEP - Casco Bay Marine", "reference_number": "PPD-20260801-02"},
+            {"date": "09/01/2026", "type": "credit", "balance": 3870.1, "description": "PAYROLL DIRECT DEP - Casco Bay Marine", "reference_number": "PPD-20260901-02"},
+            {"date": "10/01/2026", "type": "credit", "balance": 3955.8, "description": "PAYROLL DIRECT DEP - Casco Bay Marine", "reference_number": "PPD-20261001-02"}
+          ], "recurring_deposits_over_250": []
+        },
+        "credit": {
+          "representative_credit_score": 641, "credit_score_equifax": 641, "credit_score_experian": 636, "credit_score_transunion": 648,
+          "mortgage_status": "30-Day Late x1", "monthly_mortgage_payment": 1690, "monthly_obligations": 2140, "total_monthly_payments": 2140,
+          "total_balance": 38900, "late_payments": "30-Day Late reported for September 2026", "open_accounts": 5, "total_accounts": 7, "recent_hard_inquiries": 2
+        }
+      },
+      "servicing": {
+        "loan_id": "5550001002", "scenario": "Trial complete; closing inputs clean",
+        "trial_payments": ["on_time", "on_time", "on_time"],
+        "servicing_data": {
+          "DLQ1": {"interest_rate": 4.75},
+          "TASK1": {"tasks": [
+            {"task_id": "ESCMOD", "status": "Completed", "description": "Escrow modification", "opened_date": "2026-09-01", "completed_date": "2026-09-18"},
+            {"task_id": "PLNMTR", "status": "Completed", "description": "Plan monitoring", "opened_date": "2026-09-01", "completed_date": "2026-09-25"}
+          ]},
+          "MES1": {"tasks": []},
+          "LSMR": {"current_interest_rate": 4.75, "new_interest_rate": 6.875, "new_term_months": 480, "new_principal_balance": 198750.0, "new_payment_amount": 1217.09},
+          "LMT3": {"x65_date": "2026-10-19", "e74_date": "2026-10-20", "j03_date": "2026-10-21", "x58_date": "2026-10-22", "e68_date": "2026-10-23"}
+        },
+        "neighbourhood_document": {"document_date": "09/15/2026", "borrower_name": "Noah P. Bennett", "property_address": "78 Harbor View Road, Portland, ME 04101", "upb": 198750.0, "prior_partial_claim_amounts": []}
+      }
+    },
+    {
+      "loan_id": "5550001003",
+      "borrower_name": "Grace L. Whitman",
+      "scenario": "One paystub",
+      "description": "Only one paystub supplied, with the only_one_paystub extraction flag. No replacement document is added automatically.",
+      "expected_outcome": "Intake Missing Doc. The missing paystub must be supplied before the case can progress to later stages.",
+      "profile": {
+        "coborrower_name": null, "borrower_ssn_last4": "9064", "document_ssn_last4": "9064", "coborrower_ssn_last4": null,
+        "address": "415 Magnolia Street, Savannah, GA 31401", "state": "GA",
+        "hoa": {"hoa_exists": false, "monthly_amount": 0.0, "association_name": null},
+        "tax_bill_date": "2026-09-05", "escrow": 298.0, "due_date": "2026-09-10", "upb": 156300.0, "months_delinquent": 2,
+        "insurance": {"carrier": "Allstate", "policy_number": "HO-55103-GA", "policy_current": true, "policy_expiry_date": "2027-03-11"},
+        "review_dates": {"l92_date": "2026-10-12", "review_start_date": "2026-10-12", "review_date_minus_10": "2026-10-02", "review_date_minus_90": "2026-07-14"},
+        "latest_note_date": "2026-10-11", "employer": "Coastal Health Clinic", "employer_ein": "58-5510030",
+        "hardship": "Reduction in income", "hardship_start": "07/22/2026", "signature_date": "09/22/2026",
+        "monthly_income": 4100, "net_pay": 1562.8, "annual_salary": 49200.0,
+        "paystubs": [
+          {"pay_period_start": "09/16/2026", "pay_period_end": "09/30/2026", "pay_date": "10/01/2026", "gross_ytd": 36900, "ytd_periods_paid": 18}
+        ],
+        "bank": {
+          "institution_name": "Synovus Bank", "account_last4": "3307", "statement_start_date": "07/15/2026", "statement_end_date": "10/06/2026",
+          "opening_balance": 1840.2, "closing_balance": 2411.6,
+          "all_deposits": [
+            {"date": "08/01/2026", "type": "credit", "balance": 3502.9, "description": "PAYROLL DIRECT DEP - Coastal Health Cli", "reference_number": "PPD-20260801-03"},
+            {"date": "09/01/2026", "type": "credit", "balance": 3398.4, "description": "PAYROLL DIRECT DEP - Coastal Health Cli", "reference_number": "PPD-20260901-03"},
+            {"date": "10/01/2026", "type": "credit", "balance": 3467.0, "description": "PAYROLL DIRECT DEP - Coastal Health Cli", "reference_number": "PPD-20261001-03"}
+          ], "recurring_deposits_over_250": []
+        },
+        "credit": {
+          "representative_credit_score": 652, "credit_score_equifax": 652, "credit_score_experian": 645, "credit_score_transunion": 657,
+          "mortgage_status": "60-Day Late x1", "monthly_mortgage_payment": 1410, "monthly_obligations": 1920, "total_monthly_payments": 1920,
+          "total_balance": 27400, "late_payments": "60-Day Late reported for August 2026", "open_accounts": 4, "total_accounts": 6, "recent_hard_inquiries": 1
+        }
+      },
+      "servicing": {
+        "loan_id": "5550001003", "scenario": "Trial complete; closing inputs clean",
+        "trial_payments": ["on_time", "on_time", "on_time"],
+        "servicing_data": {
+          "DLQ1": {"interest_rate": 4.75},
+          "TASK1": {"tasks": [
+            {"task_id": "ESCMOD", "status": "Completed", "description": "Escrow modification", "opened_date": "2026-09-01", "completed_date": "2026-09-18"},
+            {"task_id": "PLNMTR", "status": "Completed", "description": "Plan monitoring", "opened_date": "2026-09-01", "completed_date": "2026-09-25"}
+          ]},
+          "MES1": {"tasks": []},
+          "LSMR": {"current_interest_rate": 4.75, "new_interest_rate": 6.875, "new_term_months": 480, "new_principal_balance": 156300.0, "new_payment_amount": 957.14},
+          "LMT3": {"x65_date": "2026-10-19", "e74_date": "2026-10-20", "j03_date": "2026-10-21", "x58_date": "2026-10-22", "e68_date": "2026-10-23"}
+        },
+        "neighbourhood_document": {"document_date": "09/15/2026", "borrower_name": "Grace L. Whitman", "property_address": "415 Magnolia Street, Savannah, GA 31401", "upb": 156300.0, "prior_partial_claim_amounts": []}
+      }
+    }
+  ]
+}

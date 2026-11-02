@@ -1,0 +1,272 @@
+version: "2026.11.02.1"
+
+# One Stage 5 page/process: the V1 Final Underwriting checks first, then the four
+# deterministic Final Mod checks carried over from Mortgage_Agentic_Workbench lm_final_mod.yaml.
+# Every check reads the database: MSP screens (TASK1, MES1, LMSR, LMT3, DLQ1), the extracted
+# neighbourhood document, trial_plans, lm_stages and closing_qc (MOD QC / sign-off).
+final_underwriting:
+  teams:
+    hold: Team Lead # escalation agent: hold / review → Team Lead
+    mod_qc: MOD QC
+    sign_off: Human Sign-off
+  entry:
+    required_trial_monitoring_status: Completed
+  hold_tasks:
+    task_sources: [TASK1, MES1]
+    task_ids:
+      [
+        BKCASH,
+        BKLMCA,
+        FCCOST,
+        FCBLCR,
+        RCLSRV,
+        ESCMO1,
+        ESCMOD,
+        DCPAPP,
+        DEFCSH,
+        FLDCOW,
+        FLDMD2,
+        DCPCRP,
+        PLNMTR,
+      ]
+    completed_statuses: [Completed]
+    hold_statuses: [Open, Incomplete]
+  scra:
+    interest_rate_threshold: 5.50 # LMSR.current_interest_rate (DLQ1.interest_rate if LMSR has none)
+    action_at_or_above_threshold: REVIEW
+    legal_search: false
+  neighbourhood:
+    date_format: "%m/%d/%Y"
+    max_age_days: 365
+    required_fields:
+      [
+        document_date,
+        borrower_name,
+        property_address,
+        upb,
+        prior_partial_claim_amounts,
+      ]
+    compare_available_msp_identity_and_upb: true
+    upb_tolerance: 1.00
+  lsmr_terms:
+    required_fields:
+      [
+        current_interest_rate,
+        new_interest_rate,
+        new_term_months,
+        new_principal_balance,
+        new_payment_amount,
+      ]
+    positive_numeric_fields:
+      [
+        current_interest_rate,
+        new_interest_rate,
+        new_principal_balance,
+        new_payment_amount,
+      ]
+    new_term_months_must_be_positive_integer: true
+    calculate_or_approve_payment_formula: false
+  lmt3:
+    date_keys: [x65_date, e74_date, j03_date, x58_date, e68_date]
+    strict_sequence: true
+    working_weekdays: [0, 1, 2, 3, 4] # Monday = 0
+    update_msp: false
+  handoff:
+    mir_mode: "Display only · no integration"
+    escalation_mode: "Simulated only · not sent"
+  mod_qc:
+    borrower_property:
+      label: Application Form vs MSP borrower and property
+      fields:
+        - id: borrower_name
+          label: Borrower name
+          left_source: application_form
+          left_path: borrower_name
+          left_label: Application Form
+          right_source: msp
+          right_path: borrower_name
+          right_label: MSP
+          comparison: normalized_text
+        - id: coborrower_name
+          label: Co-borrower name
+          left_source: application_form
+          left_path: coborrower_name
+          left_label: Application Form
+          right_source: msp
+          right_path: coborrower_name
+          right_label: MSP
+          comparison: normalized_text
+        - id: property_address
+          label: Property address
+          left_source: application_form
+          left_path: property_address
+          left_label: Application Form
+          right_source: msp
+          right_path: property_address
+          right_label: MSP
+          comparison: normalized_text
+    principal_balance:
+      id: principal_balance
+      label: Principal balance
+      field:
+        id: principal_balance
+        label: Principal balance
+        left_source: dlq1
+        left_path: upb_balance
+        left_label: MSP DLQ1.upb_balance
+        right_source: lsmr
+        right_path: new_principal_balance
+        right_label: MSP LMSR.new_principal_balance
+        comparison: exact_decimal
+    new_terms:
+      label: New terms vs approved Trial Plan
+      fields:
+        - id: interest_rate_pct
+          label: New interest rate
+          left_source: lsmr
+          left_path: new_interest_rate
+          left_label: MSP LMSR.new_interest_rate
+          right_source: plan
+          right_path: interest_rate_pct
+          right_label: Approved Trial Plan.interest_rate_pct
+          comparison: exact_decimal
+        - id: principal_balance
+          label: New principal balance
+          left_source: lsmr
+          left_path: new_principal_balance
+          left_label: MSP LMSR.new_principal_balance
+          right_source: plan
+          right_path: upb_balance
+          right_label: Approved Trial Plan.upb_balance
+          comparison: exact_decimal
+        - id: term_months
+          label: New loan term
+          left_source: lsmr
+          left_path: new_term_months
+          left_label: MSP LMSR.new_term_months
+          right_source: plan
+          right_path: amortization_months
+          right_label: Approved Trial Plan.amortization_months
+          comparison: exact_decimal
+      payment:
+        id: new_payment_amount
+        label: New monthly payment
+        left_label: MSP LMSR P&I + MSP ANA1 escrow
+        left_components:
+          - id: principal_interest
+            source: lsmr
+            path: new_payment_amount
+            label: MSP LMSR.new_payment_amount
+          - id: escrow_payment
+            source: ana1
+            path: escrow_payment_amount
+            label: MSP ANA1.escrow_payment_amount
+        right_label: Approved Trial Plan P&I + escrow
+        right_components:
+          - id: principal_interest
+            source: plan
+            path: principal_interest
+            label: Approved Trial Plan.principal_interest
+          - id: escrow_payment
+            source: plan
+            path: escrow_payment
+            label: Approved Trial Plan.escrow_payment
+
+final_mod_closing:
+  # trial_outcome comes from the persisted Stage 4 status.
+  trial_outcome_from_stage4: { Completed: completed, Defaulted: broken }
+  inputs:
+    trial_outcome: lm_stages.trial_monitoring_status
+    borrower_property_verified: closing_qc.borrower_property_verified
+    principal_matches_msp: closing_qc.principal_matches_msp
+    new_terms_match_plan: closing_qc.new_terms_match_plan
+  checks:
+    - id: trial_outcome
+      label: Trial outcome
+      skill: check_trial_outcome
+      params: { field: trial_outcome }
+      messages:
+        pass: "Trial completed."
+        flagged: "Trial broken."
+        pending: "Trial in progress."
+
+    - id: borrower_property
+      label: Borrower & property match the Note
+      skill: check_flag_verified
+      tags: [qc]
+      params: { field: borrower_property_verified }
+      messages:
+        pass: "Verified."
+        pending: "Pending QC review."
+        flagged: "Mismatch found."
+
+    - id: principal_balance
+      label: Principal balance matches MSP
+      skill: check_flag_verified
+      tags: [qc]
+      requires: { trial_outcome: pass }
+      params: { field: principal_matches_msp }
+      messages:
+        pass: "Verified."
+        pending: "Pending QC review."
+        flagged: "Mismatch found."
+
+    - id: new_terms
+      label: New terms match the approved plan
+      skill: check_flag_verified
+      tags: [qc]
+      requires: { trial_outcome: pass }
+      params: { field: new_terms_match_plan }
+      messages:
+        pass: "Verified."
+        pending: "Pending QC review."
+        flagged: "Mismatch found."
+
+  facts:
+    trial_status: { type: check_status, check: trial_outcome }
+    qc_pass: { type: count_checks, tag: qc, status: pass }
+    qc_total: { type: count_checks, tag: qc }
+    qc_complete: { type: compare, left: qc_pass, op: eq, right: qc_total }
+
+  # First matching rule wins. Recording and SLA do not affect closing.
+  verdict_rules:
+    - { verdict: denied, when: { fact: trial_status, op: eq, value: flagged } }
+    - {
+        verdict: sign_off_in_progress,
+        when: { fact: qc_complete, op: eq, value: false },
+      }
+    - { verdict: signed_off }
+
+  verdicts:
+    signed_off:
+      label: Signed Off
+      tone: green
+      group: moving_forward
+      description: "QC complete and underwriting signed off."
+    sign_off_in_progress:
+      label: Sign Off & In Progress
+      tone: amber
+      group: needs_attention
+      description: "QC checks still pending."
+      action:
+        label: Push QC
+        severity: medium
+        show_checks: [borrower_property, principal_balance, new_terms]
+    denied:
+      label: Denied
+      tone: red
+      group: needs_attention
+      description: "Trial broken - modification cannot close."
+      action:
+        label: Investigate
+        severity: high
+        show_checks: [trial_outcome, borrower_property]
+
+  groups:
+    - { id: moving_forward, label: Moving forward, tone: green }
+    - { id: needs_attention, label: Needs attention, tone: amber }
+
+  pending_actions:
+    title: Pending actions
+    severity_order: [high, medium, low]
+    item_title: "{verdict_label} — {loan_id} ({borrower_name})"
