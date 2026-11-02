@@ -11,7 +11,7 @@ from .core.config import settings
 from .core.database import create_tables, engine
 from .engine.playbook import playbooks
 from .engine.scheduler import auto_flow
-from .routes import cases, decisions, extracted_data, lm_stages, msp, processes, retention, runs, workflow
+from .routes import cases, data_management, decisions, extracted_data, lm_stages, msp, processes, retention, runs, workflow
 import os
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -58,7 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (msp, extracted_data, lm_stages, processes, retention, workflow, decisions, runs, cases):
+for module in (msp, extracted_data, lm_stages, processes, retention, workflow, decisions, runs, cases, data_management):
     app.include_router(module.router)
 
 
