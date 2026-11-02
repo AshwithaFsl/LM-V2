@@ -11,21 +11,36 @@ from .core.config import settings
 from .core.database import create_tables, engine
 from .engine.playbook import playbooks
 from .engine.scheduler import auto_flow
-from .routes import cases, data_management, decisions, extracted_data, lm_stages, msp, processes, retention, runs, workflow
-
+from .routes import cases, decisions, extracted_data, lm_stages, msp, processes, retention, runs, workflow
+import os
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    create_tables()  # schema only — data comes from scripts/import_data.py
-    playbooks()  # load and validate every harness/*/playbook.yaml now, not on the first run
-    frontend.ensure_built()  # rebuild the UI first if frontend/ changed since the last build
-    frontend.start_watcher()  # …and keep rebuilding on frontend edits while running
+    create_tables()
+    playbooks()
+
+    # Render builds the frontend during deployment.
+    # Local development can build and watch frontend changes.
+    is_render = os.getenv("RENDER", "").lower() == "true"
+
+    if not is_render:
+        frontend.ensure_built()
+        frontend.start_watcher()
+    else:
+        logging.info("Render detected: skipping frontend rebuild and watcher.")
+
     auto_flow.start()
+
     yield
+
     auto_flow.stop()
-    frontend.stop_watcher()
+
+    if not is_render:
+        frontend.stop_watcher()
+
 
 
 app = FastAPI(
@@ -43,7 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (msp, extracted_data, lm_stages, processes, retention, workflow, decisions, runs, cases, data_management):
+for module in (msp, extracted_data, lm_stages, processes, retention, workflow, decisions, runs, cases):
     app.include_router(module.router)
 
 
