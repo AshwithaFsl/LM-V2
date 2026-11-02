@@ -2,9 +2,10 @@
 
 import logging
 from collections import Counter
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select, union_all
 from sqlalchemy.orm import Session
 
 from .. import models
@@ -68,9 +69,44 @@ def _loan_rows(db: Session) -> list[tuple[models.Msp, models.LmStages | None]]:
         db.execute(
             select(models.Msp, models.LmStages)
             .outerjoin(models.LmStages, models.LmStages.loan_id == models.Msp.loan_id)
-            .order_by(models.Msp.borrower_name)
+            .order_by(models.Msp.loan_id)
         )
     )
+
+
+def _last_activity_by_loan(db: Session) -> dict[str, datetime]:
+    """Latest recorded case activity, shared across all five process lists.
+
+    Use event timestamps, never scheduled due dates or document business dates.
+    Aggregate in SQL so historical runs/findings are not loaded into memory.
+    """
+    sources = (
+        (models.LmStages, (models.LmStages.updated_at,)),
+        (models.ExtractedData, (models.ExtractedData.extracted_at,)),
+        (models.MockServicing, (models.MockServicing.loaded_at,)),
+        (models.AgentRun, (models.AgentRun.started_at, models.AgentRun.finished_at)),
+        (models.WorkflowRun, (models.WorkflowRun.started_at, models.WorkflowRun.finished_at)),
+        (models.Decision, (models.Decision.created_at, models.Decision.decided_at)),
+        (models.TrialPlan, (models.TrialPlan.created_at, models.TrialPlan.decided_at)),
+        (models.ClosingQc, (models.ClosingQc.qc_at, models.ClosingQc.mod_approved_at, models.ClosingQc.updated_at)),
+    )
+    events = union_all(
+        *[
+            select(model.loan_id.label("loan_id"), timestamp.label("activity_at"))
+            .where(model.loan_id.is_not(None), timestamp.is_not(None))
+            for model, timestamps in sources
+            for timestamp in timestamps
+        ],
+        select(models.TrialPlan.loan_id, models.TrialInstallment.evaluated_at)
+        .join(models.TrialInstallment, models.TrialInstallment.plan_id == models.TrialPlan.id)
+        .where(models.TrialInstallment.evaluated_at.is_not(None)),
+    ).subquery()
+    return {
+        loan_id: activity_at.replace(tzinfo=timezone.utc) if activity_at.tzinfo is None else activity_at.astimezone(timezone.utc)
+        for loan_id, activity_at in db.execute(
+            select(events.c.loan_id, func.max(events.c.activity_at)).group_by(events.c.loan_id)
+        )
+    }
 
 
 @router.get("", response_model=list[ProcessSummary])
@@ -85,6 +121,7 @@ def get_process(stage_no: int, db: Session = Depends(get_db)) -> ProcessDetail:
     stage = _stage_or_404(stage_no)
     rows = _loan_rows(db)
     with_docs = _with_documents(db)
+    activity = _last_activity_by_loan(db)
     last_runs: dict[str, models.AgentRun] = {}
     for run in db.scalars(select(models.AgentRun).where(models.AgentRun.stage_no == stage_no).order_by(models.AgentRun.started_at)):
         last_runs[run.loan_id] = run
@@ -103,11 +140,15 @@ def get_process(stage_no: int, db: Session = Depends(get_db)) -> ProcessDetail:
             last_run_id=last_runs[loan.loan_id].id if loan.loan_id in last_runs else None,
             last_run_status=last_runs[loan.loan_id].status if loan.loan_id in last_runs else None,
             last_run_at=last_runs[loan.loan_id].started_at if loan.loan_id in last_runs else None,
+            last_activity_at=activity.get(loan.loan_id),
             open_decision_id=open_decisions.get(loan.loan_id),
             runnable=loan.loan_id in runnable,
         )
         for loan, lm in rows
     ]
+    # Stable loan-ID order breaks ties; cases with no activity remain at the bottom.
+    # This changes display order only, not the runner's candidate/execution order.
+    loans.sort(key=lambda loan: loan.last_activity_at or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
     return ProcessDetail.model_validate({**_summary(db, stage, rows, with_docs), "loans": loans})
 
 

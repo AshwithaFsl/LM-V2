@@ -1,5 +1,4 @@
 // Shared pieces for the End-to-End page and the five process pages (backend routes/processes.py, routes/workflow.py).
-import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CircleDot,
@@ -9,7 +8,7 @@ import {
   UserRound,
   Zap,
 } from "lucide-react";
-import { apiGet, apiPost } from "../../lib/api";
+import { apiGet } from "../../lib/api";
 import { timeAgo } from "../../lib/utils";
 
 export const mutedFg = { color: "hsl(var(--muted-foreground))" };
@@ -96,35 +95,14 @@ export function useRefreshRuns() {
   };
 }
 
-/** "Run end-to-end" + the auto-flow switch. */
+/** Auto-flow switch and its latest activity. */
 export function WorkflowControls() {
-  const refresh = useRefreshRuns();
-  const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
   const { data: auto } = useQuery({
     queryKey: ["auto-flow"],
     queryFn: () => apiGet("/api/workflow/auto"),
     refetchInterval: 10000,
   });
   const qc = useQueryClient();
-
-  async function runAll() {
-    setBusy(true);
-    setNote(null);
-    try {
-      const r = await apiPost("/api/workflow/run", {});
-      setNote(
-        r.queued
-          ? `${r.queued} case${r.queued === 1 ? "" : "s"} started`
-          : "Nothing waiting — every case is running, paused, or done",
-      );
-      refresh();
-    } catch (err) {
-      setNote(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function toggle() {
     const next = await fetch("/api/workflow/auto", {
@@ -153,17 +131,13 @@ export function WorkflowControls() {
             Auto-flow {auto.enabled ? "on" : "off"}
           </button>
         )}
-        <PrimaryButton onClick={runAll} busy={busy}>
-          Run end-to-end
-        </PrimaryButton>
       </div>
       <span className="font-sans text-xs" style={mutedFg}>
-        {note ??
-          (auto?.last_tick
+        {auto?.last_tick
             ? `Last auto-flow check ${timeAgo(auto.last_tick)} · moved ${auto.last_moved}`
             : auto?.enabled
               ? "Auto-flow is watching for new cases"
-              : "")}
+              : ""}
       </span>
     </div>
   );

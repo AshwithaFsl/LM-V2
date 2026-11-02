@@ -31,6 +31,7 @@ class LoanAtStage(BaseModel):
     last_run_id: str | None
     last_run_status: str | None
     last_run_at: datetime | None
+    last_activity_at: datetime | None = None  # latest recorded case activity, across all stages
     open_decision_id: str | None
     runnable: bool = False  # Run would pick this loan up now (waiting, or a re-runnable status)
 

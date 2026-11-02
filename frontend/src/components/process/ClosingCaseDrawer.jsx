@@ -214,8 +214,6 @@ export default function ClosingCaseDrawer({
   loan,
   onClose,
   onDocuments,
-  onRun,
-  running,
 }) {
   const query = useStageCase(5, loan.loan_id);
   const data = query.data;
@@ -253,16 +251,6 @@ export default function ClosingCaseDrawer({
           data={data}
           onDocuments={onDocuments}
           onClose={onClose}
-          onRun={onRun}
-          running={running}
-          runnable={loan.runnable}
-          runLabel={
-            d?.rerun_entry
-              ? d.qc?.mod_approved_at
-                ? "Re-check Final Mod"
-                : "Re-check MOD QC"
-              : "Run Final UW"
-          }
         />
       }
     >

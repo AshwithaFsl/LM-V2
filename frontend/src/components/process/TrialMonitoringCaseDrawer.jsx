@@ -9,7 +9,7 @@ import { servicingDisplayText } from "../../lib/displayMessages";
 
 const row = { background: "hsl(var(--card))", borderBottom: "1px solid hsl(var(--border))" };
 
-export default function TrialMonitoringCaseDrawer({ loan, onClose, onDocuments, onRun, running }) {
+export default function TrialMonitoringCaseDrawer({ loan, onClose, onDocuments }) {
   const query = useStageCase(4, loan.loan_id);
   const data = query.data;
   const run = data?.latest_run;
@@ -20,8 +20,7 @@ export default function TrialMonitoringCaseDrawer({ loan, onClose, onDocuments, 
 
   return (
     <CaseDrawerShell title={loan.borrower_name} subtitle={`Loan ${loan.loan_id} · Trial Monitoring`} status={status} onClose={onClose}
-      footer={<CaseFooter loan={loan} data={data} onDocuments={onDocuments} onClose={onClose} onRun={onRun} running={running}
-        runnable={loan.runnable} runLabel="Run monitoring cycle" />}>
+      footer={<CaseFooter loan={loan} data={data} onDocuments={onDocuments} onClose={onClose} />}>
       <CaseLoading query={query} label="trial monitoring" />
       {data && <>
         <LatestRunCard run={run} remark={data.remark} emptyText="This loan has not been monitored yet." />

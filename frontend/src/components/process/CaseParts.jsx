@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { FileSearch, LoaderCircle, Play, X } from "lucide-react";
+import { FileSearch, LoaderCircle, X } from "lucide-react";
 import { Link } from "wouter";
 import Card from "../ui/Card";
 import { PrimaryButton, StatusPill, fg, mutedFg } from "./ProcessParts";
@@ -352,27 +352,18 @@ export function RunHistory({ runs }) {
   );
 }
 
-/** Footer: documents, open decision, and re-run when the loan can run at this stage. */
+/** Footer: documents and any open human decision. */
 export function CaseFooter({
   loan,
   data,
   onDocuments,
   onClose,
-  onRun,
-  running,
-  runnable,
-  runLabel = "Run again",
 }) {
   return (
     <>
       <PrimaryButton icon={FileSearch} onClick={() => onDocuments(loan)}>
         View documents
       </PrimaryButton>
-      {runnable && (
-        <PrimaryButton icon={Play} busy={running} onClick={onRun}>
-          {runLabel}
-        </PrimaryButton>
-      )}
       {data?.open_decision_id && (
         <Link
           href={`/decision-inbox/${data.open_decision_id}`}

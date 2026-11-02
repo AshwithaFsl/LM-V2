@@ -99,7 +99,7 @@ function PlanCard({ plan }) {
   );
 }
 
-export default function TrialUWCaseDrawer({ loan, onClose, onDocuments, onRun, running }) {
+export default function TrialUWCaseDrawer({ loan, onClose, onDocuments }) {
   const query = useStageCase(3, loan.loan_id);
   const data = query.data;
   const run = data?.latest_run;
@@ -109,8 +109,7 @@ export default function TrialUWCaseDrawer({ loan, onClose, onDocuments, onRun, r
 
   return (
     <CaseDrawerShell title={loan.borrower_name} subtitle={`Loan ${loan.loan_id} · Trial Underwriting`} status={status} onClose={onClose}
-      footer={<CaseFooter loan={loan} data={data} onDocuments={onDocuments} onClose={onClose} onRun={onRun} running={running}
-        runnable={loan.runnable} runLabel="Run Trial UW" />}>
+      footer={<CaseFooter loan={loan} data={data} onDocuments={onDocuments} onClose={onClose} />}>
       <CaseLoading query={query} label="underwriting details" />
       {data && <>
         <LatestRunCard run={run} remark={data.remark}

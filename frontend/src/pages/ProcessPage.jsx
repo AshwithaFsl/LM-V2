@@ -8,17 +8,15 @@ import RetentionCaseDrawer from "../components/process/RetentionCaseDrawer";
 import TrialMonitoringCaseDrawer from "../components/process/TrialMonitoringCaseDrawer";
 import TrialUWCaseDrawer from "../components/process/TrialUWCaseDrawer";
 import Card from "../components/ui/Card";
-import { PlaybookFlow, PrimaryButton, StatusPill, fg, mutedFg, statusColor, useRefreshRuns } from "../components/process/ProcessParts";
+import { PlaybookFlow, StatusPill, fg, mutedFg, statusColor, useRefreshRuns } from "../components/process/ProcessParts";
 import { RunStatus, RunTable } from "../components/runs/RunPrimitives";
-import { apiGet, apiPost } from "../lib/api";
+import { apiGet } from "../lib/api";
 import { PROCESSES } from "../lib/navigation";
 import { processLoans, processStatus, processSummary } from "../lib/processSummary";
 import { timeAgo } from "../lib/utils";
 
 // Stages whose loans open a case drawer (checks, plans, payments, closing record) instead of the documents drawer.
 const CASE_DRAWERS = { 2: RetentionCaseDrawer, 3: TrialUWCaseDrawer, 4: TrialMonitoringCaseDrawer, 5: ClosingCaseDrawer };
-// Retention's Run re-evaluates every Intake-complete case that has no review or later-stage work.
-const RUN_BODY = { 2: { rerun: true } };
 
 function Tile({ label, value, color, active, onClick }) {
   return (
@@ -40,16 +38,13 @@ function Tile({ label, value, color, active, onClick }) {
   );
 }
 
-/** One of the five processes: its status board, its playbook, its loans, and its Run button. */
+/** One of the five processes: its status board, its playbook, and its loans. */
 export default function ProcessPage({ stageNo }) {
   const nav = PROCESSES[stageNo - 1];
   const refresh = useRefreshRuns();
   const [filter, setFilter] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
   const [openLoan, setOpenLoan] = useState(null);
   const [documentLoan, setDocumentLoan] = useState(null);
-  const [runningLoan, setRunningLoan] = useState(null);
   const CaseDrawer = CASE_DRAWERS[stageNo];
 
   const { data, isLoading, isError } = useQuery({
@@ -69,34 +64,6 @@ export default function ProcessPage({ stageNo }) {
     () => processLoans(data?.loans, filter),
     [data, filter],
   );
-
-  async function run() {
-    setBusy(true);
-    setNote(null);
-    try {
-      const r = await apiPost(`/api/processes/${stageNo}/run`, RUN_BODY[stageNo] ?? {});
-      setNote(r.queued ? `Running ${r.queued} case${r.queued === 1 ? "" : "s"}…` : "No cases are waiting at this stage.");
-      refresh();
-    } catch (err) {
-      setNote(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function runLoan(loan) {
-    setRunningLoan(loan.loan_id);
-    setNote(null);
-    try {
-      await apiPost(`/api/processes/${stageNo}/run`, { loan_id: loan.loan_id });
-      setNote(`Running ${loan.loan_id}…`);
-      refresh();
-    } catch (err) {
-      setNote(err.message);
-    } finally {
-      setRunningLoan(null);
-    }
-  }
 
   if (isLoading)
     return (
@@ -126,17 +93,8 @@ export default function ProcessPage({ stageNo }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <PrimaryButton
-            onClick={run}
-            busy={busy}
-            disabled={!data.playbook}
-            title={data.playbook ? "Run this stage for every case waiting at it (and re-check cases in a re-runnable status)" : "No playbook for this stage yet"}
-          >
-            Run {data.name}
-            {data.playbook && data.runnable > 0 ? ` (${data.runnable})` : ""}
-          </PrimaryButton>
           <span className="font-sans text-xs" style={mutedFg}>
-            {note ?? (data.playbook ? `${data.agent} · rules v${data.rules_version}` : "Playbook not built yet")}
+            {data.playbook ? `${data.agent} · rules v${data.rules_version}` : "Playbook not built yet"}
           </span>
         </div>
       </div>
@@ -233,7 +191,7 @@ export default function ProcessPage({ stageNo }) {
       {CaseDrawer && openLoan ? <CaseDrawer key={openLoan.loan_id}
         loan={data.loans.find((l) => l.loan_id === openLoan.loan_id) ?? openLoan}
         onClose={() => setOpenLoan(null)} onDocuments={(loan) => { setOpenLoan(null); setDocumentLoan(loan); }}
-        onRun={() => runLoan(openLoan)} running={runningLoan === openLoan.loan_id} onRefresh={refresh} /> : null}
+        onRefresh={refresh} /> : null}
       <LoanDrawer loanId={CaseDrawer ? documentLoan?.loan_id : openLoan?.loan_id}
         borrowerName={CaseDrawer ? documentLoan?.borrower_name : openLoan?.borrower_name}
         onClose={() => { setOpenLoan(null); setDocumentLoan(null); }} />

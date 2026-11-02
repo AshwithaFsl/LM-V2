@@ -125,7 +125,7 @@ function RecentWorkflows() {
       </div>
       {runs.length === 0 ? (
         <p className="px-3 py-4 font-sans text-sm" style={mutedFg}>
-          No workflow runs yet. Press Run end-to-end, or leave auto-flow on and new cases start by themselves.
+          No workflow runs yet. Enable auto-flow and new cases start by themselves.
         </p>
       ) : (
         <ul>
