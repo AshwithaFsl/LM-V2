@@ -1,4 +1,4 @@
-import { House, Landmark } from "lucide-react";
+import { Landmark } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { cn } from "../../lib/utils";
 import { BUILD_NAV, DOMAIN_JOURNEYS, OBSERVE_NAV } from "../../lib/navigation";
@@ -57,8 +57,6 @@ function NavSection({ title, items }) {
 }
 
 export default function Sidebar() {
-  const [location] = useLocation();
-
   return (
     <aside
       className="sidebar-dark flex flex-col shrink-0"
@@ -92,10 +90,6 @@ export default function Sidebar() {
             Agentic OS for Mortgage
           </p>
         </div>
-      </div>
-
-      <div className="mb-4">
-        <NavLink href="/" icon={House} label="Command Center" active={location === "/"} />
       </div>
 
       <NavSection title="Domain Journeys" items={DOMAIN_JOURNEYS} />

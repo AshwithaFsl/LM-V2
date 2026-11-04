@@ -1,8 +1,7 @@
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 import AppLayout from "./components/layout/AppLayout";
 import AgentConsole from "./pages/AgentConsole";
 import AgentRuns from "./pages/AgentRuns";
-import CommandCenter from "./pages/CommandCenter";
 import DataManagement from "./pages/DataManagement";
 import DecisionInbox from "./pages/DecisionInbox";
 import KnowledgeBase from "./pages/KnowledgeBase";
@@ -24,7 +23,9 @@ export default function App() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={CommandCenter} />
+        <Route path="/">
+          <Redirect to="/loss-mitigation" replace />
+        </Route>
         <Route path="/agent-console" component={AgentConsole} />
         <Route path="/loss-mitigation" component={LossMitigationEndToEnd} />
         <Route path="/loss-mitigation-dashboard" component={LossMitigationDashboard} />

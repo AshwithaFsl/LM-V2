@@ -152,6 +152,7 @@ export function PlaybookFlow({ playbook, trace }) {
   const traced = !!trace;
   const work = playbook.nodes.filter((n) => n.kind !== "end");
   const ends = playbook.nodes.filter((n) => n.kind === "end");
+  const endStatuses = [...new Set(ends.map((n) => n.status))];
   const titleOf = Object.fromEntries(
     playbook.nodes.map((n) => [n.id, n.title]),
   );
@@ -227,17 +228,17 @@ export function PlaybookFlow({ playbook, trace }) {
         <span className="font-sans text-xs" style={mutedFg}>
           Ends with:
         </span>
-        {ends.map((n) => (
+        {endStatuses.map((status) => (
           <span
-            key={n.id}
+            key={status}
             title={
-              n.advance
+              ends.some((n) => n.status === status && n.advance)
                 ? "Moves the loan to the next stage"
                 : "The loan stops here"
             }
-            style={{ opacity: traced && !visited[n.id] ? 0.35 : 1 }}
+            style={{ opacity: traced && !ends.some((n) => n.status === status && visited[n.id]) ? 0.35 : 1 }}
           >
-            <StatusPill status={n.status} />
+            <StatusPill status={status} />
           </span>
         ))}
       </div>
